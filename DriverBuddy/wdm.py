@@ -26,7 +26,7 @@ def check_for_fake_driver_entry(driver_entry_address):
 	while GetMnem(end_address) !="jmp" and GetMnem(end_address) !="call":
 	    end_address -= 0x1
 	real_driver_entry_address = LocByName(GetOpnd(end_address, 0))
-	print "[+] Found real DriverEntry address of %08x" % real_driver_entry_address
+	print("[+] Found real DriverEntry address of %08x" % real_driver_entry_address)
 	MakeName(real_driver_entry_address, "Real_Driver_Entry")
 	return real_driver_entry_address
 
@@ -54,12 +54,12 @@ def locate_ddc(driver_entry_address):
 	for i in driver_entry_func[1:]:
 	    if ddc_offset in GetOpnd(i, 0)[4:] and GetMnem(prev_instruction) == "lea":
 	    	real_ddc = LocByName(GetOpnd(prev_instruction, 1))
-	    	print "[+] Found DispatchDeviceControl 0x%08x" % real_ddc
+	    	print("[+] Found DispatchDeviceControl 0x%08x" % real_ddc)
 	    	MakeName(real_ddc, "DispatchDeviceControl")
 	    	dispatch["ddc"] = real_ddc
 	    if didc_offset in GetOpnd(i, 0)[4:] and GetMnem(prev_instruction) == "lea":
 	    	real_didc = LocByName(GetOpnd(prev_instruction, 1))
-	    	print "[+] Found DispatchInternalDeviceControl 0x%08x" % real_didc
+	    	print("[+] Found DispatchInternalDeviceControl 0x%08x" % real_didc)
 	    	MakeName(real_didc, "DispatchInternalDeviceControl")
 	    	dispatch["didc"] = real_didc
 	    prev_instruction = i
@@ -90,7 +90,7 @@ def locate_ddc(driver_entry_address):
 	    	reffunc = get_func(refs.frm)
 	        if reffunc is not None and reffunc.startEA == driver_entry_address:
         		real_ddc[count] = ddc
-        		print "[+] Possible DispatchDeviceControl 0x%08x" % ddc
+        		print("[+] Possible DispatchDeviceControl 0x%08x" % ddc)
         		MakeName(ddc, "Possible_DispatchDeviceControl%r" % count)
 	
 	if real_ddc != {}: return real_ddc
@@ -136,32 +136,32 @@ def define_ddc(ddc_address):
 					if GetMnem(i) == "mov":
 						io_stack_reg = GetOpnd(i, 0)
 						io_stack_flag = 0
-						print "[+] Stored IO_STACK_LOCATION in %s" % io_stack_reg 
+						print("[+] Stored IO_STACK_LOCATION in %s" % io_stack_reg )
 				else:
 					OpStroffEx(i, 0, irp_id, 0)
-				print "[+] Made struct IO_STACK_LOCATION"
+				print("[+] Made struct IO_STACK_LOCATION")
 			# Check for SystemBuffer
 			elif "+18h" in disasm:
 				if "rdx+18h" in src or irp_reg + "+18h" in src:
 					OpStroffEx(i, 1, irp_id, 0)
 				else:
 					OpStroffEx(i, 0, irp_id, 0)
-				print "[+] Made struct IRP+SystemBuffer"
+				print("[+] Made struct IRP+SystemBuffer")
 			# Check for IoStatus.Information
 			elif "+38h" in disasm:
 				if "rdx+38h" in src or irp_reg + "+38h" in src:
 					OpStroffEx(i, 1, irp_id, 0)
 				else:
 					OpStroffEx(i, 0, irp_id, 0)
-				print "[+] Made struct IRP+IoStatus.Information"
+				print("[+] Made struct IRP+IoStatus.Information")
 			# Need to keep track of where IRP is being moved
 			elif GetMnem(i) == "mov" and (src == "rdx" or src == irp_reg):
 				irp_reg = GetOpnd(i, 0)
 				irp_reg_flag = 0
-				print "[+] Stored IRP in %s" % irp_reg
+				print("[+] Stored IRP in %s" % irp_reg)
 			# rdx got clobbered
 			elif GetMnem(i) == "mov" and GetOpnd(i, 0) == "rdx":
-				print "[+] rdx got clobbered %s" % GetDisasm(i)
+				print("[+] rdx got clobbered %s" % GetDisasm(i))
 				rdx_flag = 1
 			# irp_reg got clobbered
 			elif GetMnem(i) == "mov" and GetOpnd(i, 0) == irp_reg:
@@ -175,40 +175,40 @@ def define_ddc(ddc_address):
 					OpStroffEx(i, 1, device_object_id, 0)
 				else:
 					OpStroffEx(i, 0, device_object_id, 0)
-				print "[+] Made struct DEVICE_OBJECT.Extension"
+				print("[+] Made struct DEVICE_OBJECT.Extension")
 			# Need to keep track of where DEVICE_OBJECT is being moved
 			elif GetMnem(i) == "mov" and src == "rcx":
 				device_object_reg = GetOpnd(i, 0)
-				print "[+] Stored DEVICE_OBJECT in %s" % device_object_reg
+				print("[+] Stored DEVICE_OBJECT in %s" % device_object_reg)
 			# rcx got clobbered
 			elif GetMnem(i) == "mov" and GetOpnd(i, 0) == "rcx":
 				rcx_flag = 1
 		elif io_stack_reg in disasm and io_stack_flag != 1:
-			print "[+] io_stack_reg= %s in %s" % (io_stack_reg, GetDisasm(i))
+			print("[+] io_stack_reg= %s in %s" % (io_stack_reg, GetDisasm(i)))
 			# Check for DeviceIoControlCode which is IO_STACK_LOCATION+18h
 			if io_stack_reg + "+18h" in disasm:
 				if io_stack_reg + "+18h" in src:
 					OpStroffEx(i, 1, io_stack_location_id, 0)
 				else:
 					OpStroffEx(i, 0, io_stack_location_id, 0)
-				print "[+] Made struct IO_STACK_LOCATION+DeviceIoControlCode"
+				print("[+] Made struct IO_STACK_LOCATION+DeviceIoControlCode")
 			# Check for InputBufferLength which is IO_STACK_LOCATION+10h
 			elif io_stack_reg in "+10h" in disasm:
 				if io_stack_reg + "+10h" in src:
 					OpStroffEx(i, 1, io_stack_location_id, 0)
 				else:
 					OpStroffEx(i, 1, io_stack_location_id, 0)
-				print "[+] Made struct IO_STACK_LOCATION+InputBufferLength"
+				print("[+] Made struct IO_STACK_LOCATION+InputBufferLength")
 			# Check for OutputBufferLength which is IO_STACK_LOCATION+8
 			elif io_stack_reg + "+8" in disasm:
 				if io_stack_reg + "+8" in src:
 					OpStroffEx(i, 1, io_stack_location_id, 0)
 				else:
 					OpStroffEx(i, 0, io_stack_location_id, 0)
-				print "[+] Made struct IO_STACK_LOCATION+OutputBufferLength"
+				print("[+] Made struct IO_STACK_LOCATION+OutputBufferLength")
 			# io_stack_reg is being clobbered
 			elif GetMnem(i) == "mov" and GetOpnd(i, 0) == io_stack_reg:
 				io_stack_flag = 1
 		else:
 			continue
-			#print "[+] nothing interesting in %08x\nInstruction: %s" % (i, GetDisasm(i))
+			#print("[+] nothing interesting in %08x\nInstruction: %s" % (i, GetDisasm(i)))

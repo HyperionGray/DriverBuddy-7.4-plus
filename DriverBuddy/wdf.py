@@ -12,7 +12,7 @@ get_ptr = get_64bit # get_32bit
 ptr_size = 8 # 4
 
 def log(string):
-	print '[+]: ' + string
+	print('[+]: ' + string)
 
 def add_struct(version):
 	id = -1
