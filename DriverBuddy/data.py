@@ -211,7 +211,7 @@ def get_driver_id(driver_entry_address):
         real_driver_entry = check_for_fake_driver_entry(driver_entry_address)
         real_ddc_addr = locate_ddc(real_driver_entry)
         if real_ddc_addr != None:
-            for ddc in real_ddc_addr.itervalues():
+            for ddc in real_ddc_addr.values():
                 define_ddc(ddc)
 
     return driver_type

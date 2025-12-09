@@ -167,7 +167,7 @@ def define_ddc(ddc_address):
 			elif GetMnem(i) == "mov" and GetOpnd(i, 0) == irp_reg:
 				irp_reg_flag = 1
 			else:
-				"[-] Something weird happened %s" % GetDisasm(i)
+				print("[-] Something weird happened %s" % GetDisasm(i))
 		elif "rcx" in disasm and rcx_flag != 1:
 			# Check for DEVICE_OBJECT.Extension
 			if "rcx+40h" in disasm:
@@ -193,7 +193,7 @@ def define_ddc(ddc_address):
 					OpStroffEx(i, 0, io_stack_location_id, 0)
 				print("[+] Made struct IO_STACK_LOCATION+DeviceIoControlCode")
 			# Check for InputBufferLength which is IO_STACK_LOCATION+10h
-			elif io_stack_reg in "+10h" in disasm:
+			elif io_stack_reg + "+10h" in disasm:
 				if io_stack_reg + "+10h" in src:
 					OpStroffEx(i, 1, io_stack_location_id, 0)
 				else:
