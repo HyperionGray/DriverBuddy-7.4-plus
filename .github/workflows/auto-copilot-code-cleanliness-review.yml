@@ -134,22 +134,27 @@ jobs:
               return hoursSinceCreation < 24;
             });
             
-            if (recentIssue) {
-              console.log(`Recent issue found: #${recentIssue.number}, skipping creation`);
-              // Update existing issue with new analysis
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: recentIssue.number,
-                body: `## Updated Analysis (${date})\n\n${analysis}`
-              });
-            } else {
-              // Create new issue
-              await github.rest.issues.create({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                title: title,
-                body: body,
-                labels: ['code-cleanliness', 'automated', 'needs-review']
-              });
+            try {
+              if (recentIssue) {
+                console.log(`Recent issue found: #${recentIssue.number}, skipping creation`);
+                // Update existing issue with new analysis
+                await github.rest.issues.createComment({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: recentIssue.number,
+                  body: `## Updated Analysis (${date})\n\n${analysis}`
+                });
+              } else {
+                // Create new issue
+                await github.rest.issues.create({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  title: title,
+                  body: body,
+                  labels: ['code-cleanliness', 'automated', 'needs-review']
+                });
+              }
+            } catch (error) {
+              console.log(`⚠️ Failed to create/update issue: ${error.message}`);
+              console.log("Note: This may be due to insufficient permissions or API limits.");
             }
