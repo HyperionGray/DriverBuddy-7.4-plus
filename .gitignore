@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.orig
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDA
+*.idb
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+*.i64
+
+# Ghidra
+*.gpr
+*.lock
+*.rep/
+*.log
+
+# Binary Ninja
+*.bndb
+
+# Radare2
+*.r2
