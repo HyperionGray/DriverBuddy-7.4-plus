@@ -1,92 +1,298 @@
+# DriverBuddy
 
-This is a port of Driver buddy by nccgroup to IDA 7.4. IDA 7.4 broke many plugins, this a fixed version of this plugin that aids with driver analysis. It is for Python 2 + IDA.
+```
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║                       DriverBuddy                             ║
+    ║           Windows Kernel Driver Analysis Toolkit             ║
+    ║                                                                ║
+    ║              ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠                              ║
+    ╚═══════════════════════════════════════════════════════════════╝
+```
 
-## OriginalDriverBuddy Docs:
+## Overview
 
-## Quickstart
+DriverBuddy is a comprehensive toolkit for analyzing Windows kernel drivers across multiple reverse engineering platforms. It automates tedious aspects of driver analysis, helping security researchers identify potential vulnerabilities and understand driver behavior more efficiently.
 
-### DriverBuddy Installation Instructions
-1. Copy DriverBuddy folder and DriverBuddy.py file into the IDA plugins folder C:\Program Files (x86)\IDA 6.8\plugins or wherever you installed IDA
+### Supported Platforms
 
+- **IDA Pro** 7.x+ (Python 3)
+- **Ghidra** 10.x+
+- **Binary Ninja** 3.x+
+- **Radare2** 5.x+
 
-### DriverBuddy Usage Instructions 
-1. Start IDA and open a Windows kernel driver
-2. Go to Edit->Plugins and select Driver Buddy or press ctrl-alt-d
-3. Check Output window for DriverBuddy analysis results
-4. To decode IOCTLs, highlight the suspected IOCTL and press ctrl-alt-i
+## Features
 
-## DriverBuddy 
+```
+    ☠  Automated driver type identification (WDM, WDF, Mini-Filter, NDIS)
+    ☠  DispatchDeviceControl and DispatchInternalDeviceControl location
+    ☠  Automatic IOCTL code discovery and decoding
+    ☠  Detection of dangerous C/C++ functions (buffer overflows, etc.)
+    ☠  Windows API function identification and analysis
+    ☠  WDM structure labeling (IRP, IO_STACK_LOCATION, DEVICE_OBJECT)
+    ☠  WDF function pointer identification and labeling
+    ☠  Cross-reference tracking for security-sensitive functions
+```
 
-DriverBuddy is an IDAPython plugin that helps automate some of the tedium
-surrounding the reverse engineering of Windows Kernel Drivers. It has a number
-of handy features, such as:
+## Installation
 
-* Identifying the type of driver
-* Locating DispatchDeviceControl and DispatchInternalDeviceControl functions
-* Populating common structs for WDF and WDM drivers
-	* Attempts to identify and label structs like the IRP and IO_STACK_LOCATION
-	* Labels calls to WDF functions that would normally be unlabeled
-* Finding known IOCTL codes and decoding them
-* Flagging functions prone to misuse
+### IDA Pro
 
+1. Copy `DriverBuddy.py` and the `DriverBuddy/` folder to your IDA plugins directory:
+   - **Windows**: `C:\Program Files\IDA Pro 7.x\plugins\`
+   - **Linux**: `~/.idapro/plugins/`
+   - **macOS**: `~/Library/Application Support/IDA Pro/plugins/`
 
-### Finding DispatchDeviceControl
+2. Restart IDA Pro
 
-Being able to automatically locate and identify the DispatchDeviceControl
-function is a time saving task during driver reverse engineering. This function
-is used to route all incoming DeviceIoControl codes to the specific driver
-function associated with that code. Automatically identifying this function
-makes finding the valid DeviceIoControl codes for each driver much quicker.
-Additionally, when investigating possible vulnerabilities in a driver due to a
-crash, knowing the location of this function helps narrow the focus to the
-specific function call associated with the crashing DeviceIoControl code.
+### Ghidra
 
+1. Open Ghidra Script Manager (Window → Script Manager)
+2. Click the "Script Directories" button
+3. Add the directory containing `DriverBuddy_Ghidra.py`
+4. Refresh the script list
 
-### Labeling WDM Structs
+### Binary Ninja
 
-Several driver structures are shared among all WDM drivers. Being able to
-automatically identify these structures, such as the IO_STACK_LOCATION, IRP,
-and DeviceObject structures, can help save time during the reverse engineering
-process. DriverBuddy attempts to locate and identify many of these structs.
+1. Copy `DriverBuddy_BinaryNinja.py` to your Binary Ninja plugins directory:
+   - **Windows**: `%APPDATA%\Binary Ninja\plugins\`
+   - **Linux**: `~/.binaryninja/plugins/`
+   - **macOS**: `~/Library/Application Support/Binary Ninja/plugins/`
 
+2. Restart Binary Ninja
 
-### Labeling WDF Functions
+### Radare2
 
-As with WDM drivers, there are several functions and structures that are shared
-among all WDF drivers. Automatically identifying these functions and structures
-will save time during the reverse engineering process and provide context to
-unindentified areas of the driver where these functions are in use.
+1. Install r2pipe: `pip3 install r2pipe`
+2. Run from within radare2:
+   ```bash
+   r2 -i DriverBuddy_Radare2.py driver.sys
+   ```
+   Or from the r2 console:
+   ```bash
+   #!pipe python3 DriverBuddy_Radare2.py
+   ```
 
-### Decoding DeviceIoControl Codes 
+## Usage
 
-While reversing drivers, it is common to come across IOCTL codes as part of the 
-analysis. These codes, when decoded, reveal useful information to reverse 
-engineers and may draw focus to specific parts of the driver where 
-vulnerabilities are more likely to exist.  
+### IDA Pro
 
+```
+    ☠  Method 1: Edit → Plugins → Driver Buddy
+    ☠  Method 2: Press Ctrl+Alt+D
+    ☠  Decode IOCTL: Highlight suspected IOCTL value and press Ctrl+Alt+I
+```
 
-### Future things:
+**Example Output:**
+```
+╔═══════════════════════════════════════════════════════════════╗
+║              DriverBuddy for IDA Pro                          ║
+║              Windows Kernel Driver Analysis                   ║
+║                                                                ║
+║              ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠ ☠                              ║
+╚═══════════════════════════════════════════════════════════════╝
+[+] Welcome to Driver Buddy
+[+] DriverEntry found
+[+] Driver type detected: WDM
+[+] Found DispatchDeviceControl 0x00011234
+[+] Found strcpy with 3 references
+[+] Found IOCTL: 0x00222004
+    Device   : 0x0022
+    Function : 0x801
+    Method   : METHOD_BUFFERED
+    Access   : FILE_ANY_ACCESS
+```
 
-1. Add obref and deref checks of some sort to help find refcount issues
-2. Polish output, gui? 
-3. Strengthen/polish current features
-    - Improve reliablity of DispatchDeviceControl finder
-    - Write short blurbs about why things are flagged
-    - MSDN doc importer
+### Ghidra
 
-Stretch Goals:
-1. Find IOCTLs automatically
-2. IRP taint analysis aka follow aliasing of sysbuf/inbuf, size
-3. Identify other common structures
-4. Uninitialized variables, etc
+1. Open your Windows driver in Ghidra
+2. Open Script Manager (Window → Script Manager)
+3. Run `DriverBuddy_Ghidra.py`
+4. Check the console output for analysis results
 
+### Binary Ninja
 
-### Credits
+1. Open your Windows driver in Binary Ninja
+2. Navigate to Plugins → DriverBuddy → Analyze Driver
+3. View results in the log window
 
-* We are using Satoshi Tanda's IOCTL decoder, originally found here https://github.com/tandasat/WinIoCtlDecoder.
-* The WDF functions struct is based on Red Plait's work (http://redplait.blogspot.ru/2012/12/wdffunctionsidc.html) and was ported to IDA Python by Nicolas Guigo, later updated by us.
+### Radare2
 
+```bash
+# Method 1: Load driver and run script
+r2 -i DriverBuddy_Radare2.py driver.sys
 
-### License
+# Method 2: Run from r2 console
+r2 driver.sys
+[0x00000000]> aaa
+[0x00000000]> #!pipe python3 DriverBuddy_Radare2.py
+```
 
-This software is released under the MIT License, see LICENSE.
+## Analysis Capabilities
+
+### Driver Type Detection
+
+```
+    ☠  WDM (Windows Driver Model)
+    ☠  WDF (Windows Driver Framework)
+    ☠  Mini-Filter (File System Filter)
+    ☠  NDIS (Network Driver Interface Specification)
+```
+
+### IOCTL Decoding
+
+DriverBuddy automatically decodes Windows I/O Control codes to reveal:
+
+- **Device Type**: The type of device the IOCTL is intended for
+- **Function Code**: The specific operation being requested
+- **Transfer Method**: How data is transferred (buffered, direct, neither)
+- **Access Rights**: Required access permissions
+
+**Example:**
+```
+[+] IOCTL: 0x00222004
+    Device   : FILE_DEVICE_UNKNOWN (0x0022)
+    Function : 0x801
+    Method   : METHOD_BUFFERED
+    Access   : FILE_ANY_ACCESS
+```
+
+### Dangerous Function Detection
+
+```
+    ☠  Buffer Overflow Prone: strcpy, strcat, sprintf, gets
+    ☠  Memory Operations: memcpy, RtlCopyMemory
+    ☠  Format String Issues: scanf, printf variants
+```
+
+### Windows API Monitoring
+
+```
+    ☠  Access Control: SeAccessCheck, SeQueryAuthenticationIdToken
+    ☠  Device Management: IoRegisterDeviceInterface, IoCreateDevice
+    ☠  Object Management: ObReferenceObject, ObDereferenceObject
+    ☠  System Calls: Zw* functions (ZwCreateFile, ZwOpenKey, etc.)
+    ☠  Process/Thread: PsCreateSystemThread, PsLookupProcessByProcessId
+```
+
+## Architecture
+
+```
+DriverBuddy/
+├── __init__.py           # Module initialization
+├── data.py               # Driver structure and function analysis
+├── ioctl.py              # IOCTL decoding logic
+├── wdm.py                # WDM-specific analysis
+└── wdf.py                # WDF-specific analysis (function table parsing)
+```
+
+## Technical Details
+
+### DispatchDeviceControl Location
+
+DriverBuddy locates the `DispatchDeviceControl` function by:
+
+1. Finding `DriverEntry` function
+2. Analyzing assignments to `DRIVER_OBJECT.MajorFunction[0x0E]`
+3. Following references to identify the actual dispatch handler
+
+### Structure Identification
+
+For WDM drivers, DriverBuddy automatically identifies and labels:
+
+- **IRP** (I/O Request Packet): Offset-based detection of `SystemBuffer`, `IoStatus.Information`
+- **IO_STACK_LOCATION**: Identification of `DeviceIoControlCode`, `InputBufferLength`, `OutputBufferLength`
+- **DEVICE_OBJECT**: Detection of device extension and characteristic fields
+
+### WDF Function Parsing
+
+For WDF drivers, DriverBuddy:
+
+1. Locates the `WdfFunctions` structure via the `WdfVersionBind` reference
+2. Parses the function pointer table based on WDF version
+3. Labels function pointers for improved readability
+
+## Security Research Applications
+
+```
+    ☠  Vulnerability Discovery: Identify unsafe function usage patterns
+    ☠  Attack Surface Analysis: Map all IOCTLs and their handlers
+    ☠  Privilege Escalation: Track access control checks and object references
+    ☠  Fuzzing Preparation: Extract IOCTL codes for targeted fuzzing
+    ☠  Exploit Development: Understand driver control flow and data structures
+```
+
+## Troubleshooting
+
+### IDA Pro
+
+- **Issue**: Plugin not loading
+  - **Solution**: Ensure Python 3 is configured in IDA (Edit → Preferences → Python)
+  - **Solution**: Check IDA console for error messages
+
+### Ghidra
+
+- **Issue**: Script not appearing
+  - **Solution**: Refresh script list in Script Manager
+  - **Solution**: Ensure script is in a configured script directory
+
+### Binary Ninja
+
+- **Issue**: Plugin not visible in menu
+  - **Solution**: Check console for import errors
+  - **Solution**: Verify Binary Ninja API version compatibility
+
+### Radare2
+
+- **Issue**: r2pipe connection failed
+  - **Solution**: Install r2pipe: `pip3 install r2pipe`
+  - **Solution**: Run script from within radare2, not standalone
+
+## Development
+
+### Contributing
+
+Contributions are welcome! Areas for improvement:
+
+- Enhanced IOCTL discovery heuristics
+- Additional driver type detection
+- GUI interfaces for each platform
+- Automated vulnerability pattern detection
+- IRP tracking and taint analysis
+
+### Future Enhancements
+
+```
+    ☠  Reference counting analysis (ObReferenceObject/ObDereferenceObject tracking)
+    ☠  Time-of-check/time-of-use (TOCTOU) detection
+    ☠  ProbeForRead/ProbeForWrite validation
+    ☠  Input validation pattern recognition
+    ☠  Race condition detection
+```
+
+## Credits
+
+```
+    ☠  Original DriverBuddy: Braden Hollembaek and Adam Pond (NCC Group)
+    ☠  IOCTL Decoder: Satoshi Tanda (https://github.com/tandasat/WinIoCtlDecoder)
+    ☠  WDF Functions: Red Plait, Nicolas Guigo
+    ☠  Modernization: Community contributors
+```
+
+## References
+
+- [Windows Driver Development](https://docs.microsoft.com/en-us/windows-hardware/drivers/)
+- [WDM Driver Architecture](https://docs.microsoft.com/en-us/windows-hardware/drivers/kernel/)
+- [WDF Framework](https://docs.microsoft.com/en-us/windows-hardware/drivers/wdf/)
+- [Windows Driver Security](https://docs.microsoft.com/en-us/windows-hardware/drivers/driversecurity/)
+
+## License
+
+This software is released under the MIT License. See LICENSE file for details.
+
+```
+    ╔═══════════════════════════════════════════════════════════════╗
+    ║                                                                ║
+    ║         ☠  Happy Hunting!  ☠                                  ║
+    ║                                                                ║
+    ╚═══════════════════════════════════════════════════════════════╝
+```
