@@ -1,0 +1,16 @@
+# DriverBuddy Requirements
+# 
+# ☠ ☠ ☠ CORE DEPENDENCIES ☠ ☠ ☠
+#
+# Core Python requirements for DriverBuddy
+# Platform-specific dependencies are optional and loaded as needed
+
+# Optional dependencies for specific platforms:
+# r2pipe>=1.7.0          # For Radare2 support
+# binaryninja             # For Binary Ninja support (commercial license required)
+
+# Development dependencies (optional):
+# pytest>=6.0.0          # For running tests
+# black>=21.0.0           # For code formatting
+# flake8>=3.8.0           # For linting
+# mypy>=0.800             # For type checking
